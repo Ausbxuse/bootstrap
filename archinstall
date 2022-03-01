@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+set -e
+
+# TODO: verify internet connection
+
+boot_size=512MiB
+
+device="/dev/sda"
+part_boot="${device}1" # TODO: need to verify the name
+part_swap="${device}2"
+part_root="${device}3"
+
+hostname="archbxuse"
+locale="en_US"
+
+customSetting() {
+  print "enter disk name:"
+  read device
+  print "enter password:"
+  read password
+}
+
+# TODO: get the best layout structure of partitions. media partition might be needed
+# partition scheme:
+# boot: 512M
+# swap: 54G
+# root: rest
+
+partitionBoot() {
+
+}
+
+partitionRoot() {
+
+}
+
+partitionSwap() {
+  swap_size=$(free --mebi | awk '/Mem:/ {print $2}')
+  swap_end=$(($boot_size + 1 + $swap_size))MiB
+}
+
+#### Partition the disk ####
+partitionDisks() {
+  partitionBoot
+  partitionSwap
+  partitionRoot
+  parted --script "${device}" -- mklabel gpt \
+    mkpart ESP fat32 1MiB $boot_size \
+    set 1 boot on \
+    mkpart primary linux-swap $boot_size ${swap_end} \
+    mkpart primary ext4 ${swap_end} 100%
+}
+
+#### Make filesystem ####
+makeFilesystem() {
+  mkfs.fat -F32 "${part_boot}"
+  mkswap "${part_swap}"
+  mkfs.ext4 "${part_root}"
+}
+
+
+#### Mount disks ####
+mountDisks() {
+  mount "${part_root}" /mnt
+  mkdir /mnt/boot
+  mount "${part_boot}" /mnt/boot
+}
+
+##### pacstrap
+installArch() {
+  pacman -Syu
+  pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio neovim grub efibootmgr intel-ucode os-prober networkmanager
+}
+
+##### generate hostname, host ip, locale(remember to update the en_US with a var)
+setHostInfo() {
+  sed -i '/^#.*en_US/s/^#//' /mnt/etc/locale.gen
+  echo "${hostname}" >> /mnt/etc/hostname
+  echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
+  cat >> /mnt/etc/hosts << EOF
+127.0.0.1 localhost
+::1 localhost
+127.0.0.1 $hostname.localdomain $hostname
+EOF
+
+##### generate fstab config file
+genfstab -U /mnt >> /mnt/etc/fstab
+
+# update time TODO: make it dynamic by automatically select local time. or else a default one
+
+###### grub, hardware clock
+(
+echo ln -sf /usr/share/zoneinfo/US/Pacific /etc/localtime
+echo hwclock --systohc
+echo locale-gen
+echo mkdir /boot/grub
+echo grub-mkconfig -o /boot/grub/grub.cfg
+echo grub-install --target=x86_64-efi --efi-directory=/boot
+) | arch-chroot /mnt
+
+}
+
+install() {
+  customSetting
+  partitionDisks
+  makeFilesystem
+  #### Turn on swap ####
+  swapon "${part_swap}"
+  mountDisks
+  installArch
+  setHostInfo
+  ###### add a password
+  echo "root:$password" | chpasswd --root /mnt
+}
+
+install
+
+echo "Finished with installation"

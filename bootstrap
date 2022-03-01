@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# TODO: This script is only for essential setup. For a more thorough setup, use another script
+
+# TODO add user and password
+print "enter username:"
+read user
+useradd $user -m -G wheel
+passwd peter
+
+# TODO install KDE Plasma
+sudo -u peter pacman -Syyu --no-confirm plasma
+
+# TODO install essential programs
+sudo -u peter pacman -S git curl rsync zsh
+
+chsh peter /usr/bin/zsh
+
+su peter
+
+sudo systemctl enable NetworkManager --now
+sudo systemctl enable sddm
