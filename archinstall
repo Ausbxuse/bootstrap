@@ -15,9 +15,9 @@ hostname="archbxuse"
 locale="en_US"
 
 customSetting() {
-  print "enter disk name:"
+  echo "enter disk name:"
   read device
-  print "enter password:"
+  echo "enter password:"
   read password
 }
 
@@ -31,7 +31,7 @@ customSetting() {
 partitionDisks() {
 
   # set swap size
-  swap_size=$(free --mebi | awk '/Mem:/ {print $2}')
+  swap_size=$(free --mebi | grep Mem | awk '{print $2}')
   swap_end=$(($boot_size + 1 + $swap_size))MiB
 
   # partition root boot and swap
