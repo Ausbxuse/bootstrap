@@ -4,7 +4,7 @@ set -e
 
 # TODO: verify internet connection
 
-boot_size=512MiB
+boot_size=512 #MiB
 
 device="/dev/sda"
 part_boot="${device}1" # TODO: need to verify the name
@@ -36,7 +36,7 @@ partitionDisks() {
 
   # partition root boot and swap
   parted --script "${device}" -- mklabel gpt \
-    mkpart ESP fat32 1MiB $boot_size \
+    mkpart ESP fat32 1MiB ${boot_size}MiB \
     set 1 boot on \
     mkpart primary linux-swap $boot_size ${swap_end} \
     mkpart primary ext4 ${swap_end} 100%
