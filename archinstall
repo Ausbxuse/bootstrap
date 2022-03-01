@@ -27,24 +27,14 @@ customSetting() {
 # swap: 54G
 # root: rest
 
-partitionBoot() {
-
-}
-
-partitionRoot() {
-
-}
-
-partitionSwap() {
-  swap_size=$(free --mebi | awk '/Mem:/ {print $2}')
-  swap_end=$(($boot_size + 1 + $swap_size))MiB
-}
-
 #### Partition the disk ####
 partitionDisks() {
-  partitionBoot
-  partitionSwap
-  partitionRoot
+
+  # set swap size
+  swap_size=$(free --mebi | awk '/Mem:/ {print $2}')
+  swap_end=$(($boot_size + 1 + $swap_size))MiB
+
+  # partition root boot and swap
   parted --script "${device}" -- mklabel gpt \
     mkpart ESP fat32 1MiB $boot_size \
     set 1 boot on \
@@ -58,7 +48,6 @@ makeFilesystem() {
   mkswap "${part_swap}"
   mkfs.ext4 "${part_root}"
 }
-
 
 #### Mount disks ####
 mountDisks() {
