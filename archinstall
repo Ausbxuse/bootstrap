@@ -62,8 +62,8 @@ mountDisks() {
 
 ##### pacstrap
 installArch() {
-  pacman -Syu
-  pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio neovim git grub efibootmgr intel-ucode os-prober networkmanager
+  # pacman -Syu # packstrap does it already?
+  pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio neovim git grub efibootmgr intel-ucode os-prober networkmanager zsh
 }
 
 ##### generate hostname, host ip, locale(remember to update the en_US with a var)

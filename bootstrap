@@ -1,26 +1,13 @@
 #!/usr/bin/env bash
 
+# WARNING: run this script only as user, not root
+
 set -e
-
-createUser() {
-  echo "enter username:"
-  read user
-  useradd $user -m -G wheel
-  echo "enter user password:"
-  passwd peter
-  echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
-  sudo chsh -s /usr/bin/zsh peter # as root
-}
-
-connectWifi() {
-  systemctl enable NetworkManager --now
-}
-
 
 installParu() {
   cd ~/
   git clone https://aur.archlinux.org/paru-bin
-  cd paru
+  cd paru-bin
   makepkg -si && cd ~/ && rm -rf paru-bin
 }
 
@@ -30,13 +17,13 @@ installPackages() {
   paru -Syyu plasma xorg-server xorg-xinit sddm-kcm alacritty
   sudo systemctl enable sddm
   # install rest
-  paru -S rsync zsh exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db qrencode zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth archlinux-keyring bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp
-  # install aur packages
-  paru -S openvpn3-git ranger-git touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git
+  paru -S rsync zsh exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db qrencode zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp
+  # install aur packages(openvpn3-git currently broken)
+  paru -S ranger-git touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git zsh-fast-syntax-highlighting
 }
 
 installConfig() {
-  git clone https://github.com/ausbxuse/dots
+  git clone --recursive https://github.com/ausbxuse/dots
   rsync -av dots/ ~/
   rm ~/README.md
   rm -rf ~/dots
@@ -48,6 +35,9 @@ addPacmanColor() {
 }
 
 setRoundedCorners() {
+  # install dependencies
+  sudo pacman -S git make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
+
   mkdir ~/.local/src
   cd ~/.local/src
   git clone https://github.com/ausbxuse/LightlyShaders2
@@ -67,9 +57,6 @@ setPlocate() {
 }
 
 main() {
-  createUser
-  connectWifi
-  su $user
   installParu
   addPacmanColor
   installPackages
