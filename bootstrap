@@ -1,22 +1,84 @@
 #!/usr/bin/env bash
 
-# TODO: This script is only for essential setup. For a more thorough setup, use another script
+set -e
 
-# TODO add user and password
-print "enter username:"
-read user
-useradd $user -m -G wheel
-passwd peter
+createUser() {
+  echo "enter username:"
+  read user
+  useradd $user -m -G wheel
+  echo "enter user password:"
+  passwd peter
+  echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
+  sudo chsh -s /usr/bin/zsh peter # as root
+}
 
-# TODO install KDE Plasma
-sudo -u peter pacman -Syyu --no-confirm plasma
+connectWifi() {
+  systemctl enable NetworkManager --now
+}
 
-# TODO install essential programs
-sudo -u peter pacman -S git curl rsync zsh
 
-chsh peter /usr/bin/zsh
+installParu() {
+  cd ~/
+  git clone https://aur.archlinux.org/paru-bin
+  cd paru
+  makepkg -si && cd ~/ && rm -rf paru-bin
+}
 
-su peter
+# install essential packages
+installPackages() {
+  # install KDE
+  paru -Syyu plasma xorg-server xorg-xinit sddm-kcm alacritty
+  sudo systemctl enable sddm
+  # install rest
+  paru -S rsync zsh exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db qrencode zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth archlinux-keyring bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp
+  # install aur packages
+  paru -S openvpn3-git ranger-git touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git
+}
 
-sudo systemctl enable NetworkManager --now
-sudo systemctl enable sddm
+installConfig() {
+  git clone https://github.com/ausbxuse/dots
+  rsync -av dots/ ~/
+  rm ~/README.md
+  rm -rf ~/dots
+  rm -rf ~/.git
+}
+
+addPacmanColor() {
+  sudo sed -i "s/\#Color/Color/g" /etc/pacman.conf
+}
+
+setRoundedCorners() {
+  mkdir ~/.local/src
+  cd ~/.local/src
+  git clone https://github.com/ausbxuse/LightlyShaders2
+  cd LightlyShaders2; rm -rf qt5build; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install && (kwin_x11 --replace &)
+}
+
+setGTKTheme() {
+  sudo mv ~/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir ~/.local/share/themes
+}
+
+setDict() {
+  sudo mv ~/.local/share/stardict /usr/share/
+}
+
+setPlocate() {
+  sudo updatedb
+}
+
+main() {
+  createUser
+  connectWifi
+  su $user
+  installParu
+  addPacmanColor
+  installPackages
+  installConfig
+  setRoundedCorners
+  setGTKTheme
+  setDict
+  setPlocate
+}
+
+main
+

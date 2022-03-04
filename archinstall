@@ -3,6 +3,10 @@
 set -e
 
 # TODO: verify internet connection
+# TODO: disk encryption
+# TODO: i386 for grub?
+# TODO: dynamic swap size for different ram sizes
+# TODO: no confirm
 
 boot_size=512 #MiB
 
@@ -59,7 +63,7 @@ mountDisks() {
 ##### pacstrap
 installArch() {
   pacman -Syu
-  pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio neovim grub efibootmgr intel-ucode os-prober networkmanager
+  pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio neovim git grub efibootmgr intel-ucode os-prober networkmanager
 }
 
 ##### generate hostname, host ip, locale(remember to update the en_US with a var)
