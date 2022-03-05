@@ -14,12 +14,12 @@ installParu() {
 # install essential packages
 installPackages() {
   # install KDE
-  paru -Syyu plasma xorg-server xorg-xinit sddm-kcm alacritty
+  paru -Syyu --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty
   sudo systemctl enable sddm
   # install rest
-  paru -S rsync zsh exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db qrencode zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp
+  paru -S --noconfirm rsync zsh exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db qrencode zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect
   # install aur packages(openvpn3-git currently broken)
-  paru -S ranger-git touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git zsh-fast-syntax-highlighting
+  paru -S --noconfirm ranger-git touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git zsh-fast-syntax-highlighting
 }
 
 installConfig() {
@@ -36,7 +36,7 @@ addPacmanColor() {
 
 setRoundedCorners() {
   # install dependencies
-  sudo pacman -S git make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
+  sudo paru -S --noconfirm git make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
 
   mkdir ~/.local/src
   cd ~/.local/src

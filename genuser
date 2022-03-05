@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e 
+
+createUser() {
+  echo "enter username:"
+  read user
+  useradd $user -m -G wheel
+  echo "enter user password:"
+  passwd peter
+  echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
+  chsh -s /usr/bin/zsh peter
+}
+
+connectWifi() {
+  systemctl enable NetworkManager --now
+}
+
+
+createUser
+connectWifi
