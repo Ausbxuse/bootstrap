@@ -33,3 +33,7 @@ StandardError=journal+console
 TimeoutSec=0" > /etc/systemd/system/systemd-fsck-root.service.d/override.conf
 sudo systemctl daemon-reload
 
+# install grub theme
+# ./.local/src/public-repos/matter/matter.py -i arch -ff ~/.local/share/fonts/victor-pixel.ttf -fn victor -fs 40
+# cd ~/Downloads && git clone https://github.com/MarianArlt/kde-plasma-chili
+# sudo tar -xzvf ~/Downloads/kde-plasma-chili.tar.gz -C /usr/share/sddm/themes

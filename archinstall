@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+
 # TODO: need to verify the name
 # TODO: verify internet connection
 # TODO: disk encryption
@@ -24,12 +25,6 @@ customSetting() {
   echo "enter password:"
   read -s password
 }
-
-# TODO: get the best layout structure of partitions. media partition might be needed
-# partition scheme:
-# boot: 512M
-# swap: 54G
-# root: rest
 
 #### Partition the disk ####
 partitionDisks() {

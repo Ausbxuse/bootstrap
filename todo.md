@@ -18,3 +18,5 @@
 - [ ] gpg
 - [ ] timedatectl
 - [ ] mimetypes
+- [ ] zsh history
+- [ ] zsh cac
