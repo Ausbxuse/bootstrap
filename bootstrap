@@ -36,16 +36,6 @@ addPacmanColor() {
   sudo sed -i "s/\#Color/Color/g" /etc/pacman.conf
 }
 
-setRoundedCorners() {
-  # install dependencies
-  sudo paru -S --noconfirm git make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
-
-  mkdir ~/.local/src/public-repos
-  cd ~/.local/src/public-repos
-  git clone https://github.com/ausbxuse/LightlyShaders2
-  cd LightlyShaders2; rm -rf qt5build; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install && (kwin_x11 --replace &)
-}
-
 setGTKTheme() {
   sudo mv ~/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir ~/.local/share/themes
 }
@@ -58,15 +48,19 @@ setPlocate() {
   sudo updatedb
 }
 
+setZsh() {
+  mkdir ~/.cache/zsh
+}
+
 main() {
   installParu
   addPacmanColor
   installPackages
   installConfig
-  setRoundedCorners
   setGTKTheme
   setDict
   setPlocate
+  setZsh
 }
 
 main
