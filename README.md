@@ -16,17 +16,17 @@ The installation process takes about 10~30 minutes depending on the hardware and
 
 ## For a full installation, do the following in order
 
-### To install Arch Linux, run this command:
+### To install Arch Linux, run this command and reboot:
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/archinstall)"
 ```
 
-### To setup a user, run:
+### To setup a user, login as root and run:
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/genuser)"
 ```
 
-### To install my configuration run:
+### To install my configuration, reboot again and login as $USER created above, run:
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/bootstrap)"
 ```
@@ -37,4 +37,4 @@ The installation process takes about 10~30 minutes depending on the hardware and
 ```
 
 ## What's next
-After you run the scripts successfully, you will need to manually setup GRUB theme and SDDM theme, brave settings, spectacle screenshot location, dynamic wallpapers, and fcitx for other input methods.
+After you run the scripts successfully, you will need to manually setup GRUB theme and SDDM theme, brave settings, spectacle screenshot location, dynamic wallpapers, and fcitx for other input methods and its theme and shortcut.

@@ -52,6 +52,10 @@ setZsh() {
   mkdir ~/.cache/zsh
 }
 
+setTime() {
+  sudo timedatectl set-ntp 1
+}
+
 main() {
   installParu
   addPacmanColor
@@ -61,6 +65,7 @@ main() {
   setDict
   setPlocate
   setZsh
+  setTime
 }
 
 main
