@@ -35,7 +35,7 @@ fi
 #### Erase empty disk ####
 eraseDisk() {
   cryptsetup open --type plain -d /dev/urandom ${device} to_be_wiped
-  dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress
+  dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress # TODO: output std err and the script stops
   cryptsetup close to_be_wiped
 }
 
@@ -60,11 +60,12 @@ encryptDisk() {
 
   mkfs.fat -F32 "${part_boot}"
 
+  mkfs.ext4 /dev/MyVolGroup/root
+  mkswap /dev/MyVolGroup/swap
+
   mount /dev/MyVolGroup/root /mnt
   swapon /dev/MyVolGroup/swap
 
-  mkfs.ext4 /dev/MyVolGroup/root
-  mkswap /dev/MyVolGroup/swap
 }
 
 #### Mount disks ####
@@ -96,7 +97,7 @@ genfstab -U /mnt >> /mnt/etc/fstab
 # update time TODO: make it dynamic by automatically select local time. or else a default one
 
 # grab the UUID of the system partition TODO: check if it is labled. if so, awk will need to print the 5th column instead of the 4th
-device_UUID=$(lsblk -f | grep $part_root | awk '{print $4}' )
+device_UUID=$(lsblk -f | grep $(echo $part_root | sed "s/^.*\/\(.*$\)/\1/g") | awk '{print $4}' )
 
 ###### grub, hardware clock
 (
@@ -108,7 +109,7 @@ echo mkdir /boot/grub
 echo touch /etc/vconsole.conf
 echo sed -i 's/^HOOKS=(base udev autodetect.*$/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g' /etc/mkinitcpio.conf # WARNING: verify!!!
 echo mkinitcpio -P 
-echo sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"\$/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 rd.luks.name=${device_UUID}=cryptlvm root=\/dev\/MyVolGroup\/root\"/" /etc/default/grub
+echo "sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"\$/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 rd.luks.name=${device_UUID}=cryptlvm root=\/dev\/MyVolGroup\/root\"/' /etc/default/grub"
 
 echo grub-mkconfig -o /boot/grub/grub.cfg
 echo grub-install --target=x86_64-efi --efi-directory=/boot
@@ -119,7 +120,7 @@ echo grub-install --target=x86_64-efi --efi-directory=/boot
 install() {
   customSetting
   eraseDisk
-  partitionDisks
+  encryptDisk
   makeFilesystem
   mountDisks
   installArch
