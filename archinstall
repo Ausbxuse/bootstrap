@@ -35,7 +35,7 @@ fi
 #### Erase empty disk ####
 eraseDisk() {
   cryptsetup open --type plain -d /dev/urandom ${device} to_be_wiped
-  dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress # TODO: output std err and the script stops
+  dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress &2> /dev/null
   cryptsetup close to_be_wiped
 }
 
@@ -121,7 +121,6 @@ install() {
   customSetting
   eraseDisk
   encryptDisk
-  makeFilesystem
   mountDisks
   installArch
   setHostInfo
