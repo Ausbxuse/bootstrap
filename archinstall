@@ -12,9 +12,6 @@ set -e
 boot_size=512 #MiB
 
 device="/dev/sda"
-part_boot="${device}1"
-part_swap="${device}2"
-part_root="${device}3"
 
 hostname="archbxuse"
 locale="en_US"
@@ -26,39 +23,60 @@ customSetting() {
   read -s password
 }
 
-#### Partition the disk ####
-partitionDisks() {
+if [ $device == "/dev/nvme0n1" ]
+then
+  part_boot="${device}p1"
+  part_root="${device}p2"
+else
+  part_boot="${device}1"
+  part_root="${device}2"
+fi
 
-  # set swap size
-  swap_size=$(free --mebi | grep Mem | awk '{print $2}')
-  swap_end=$(($boot_size + 1 + $swap_size))MiB
+#### Erase empty disk ####
+eraseDisk() {
+  cryptsetup open --type plain -d /dev/urandom ${device} to_be_wiped
+  dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress
+  cryptsetup close to_be_wiped
+}
 
-  # partition root boot and swap
+#### Create full disk encryption ####
+encryptDisk() {
+
   parted --script "${device}" -- mklabel gpt \
     mkpart ESP fat32 1MiB ${boot_size}MiB \
     set 1 boot on \
-    mkpart primary linux-swap ${boot_size}MiB ${swap_end} \
-    mkpart primary ext4 ${swap_end} 100%
-}
+    mkpart primary ext4 $(($boot_size + 1))MiB 100%
 
-#### Make filesystem ####
-makeFilesystem() {
+  cryptsetup luksFormat ${part_root} # sda2 contains the system(excluding the boot partition)
+  cryptsetup open ${part_root} cryptlvm
+
+  ram_size=$(free --mebi | grep Mem | awk '{print $2}')
+  swap_size=$(printf '%.0f' "$((ram_size * 3 / 2))") # MiB
+
+  pvcreate /dev/mapper/cryptlvm # create logical volumes
+  vgcreate MyVolGroup /dev/mapper/cryptlvm
+  lvcreate -L ${swap_size}m MyVolGroup -n swap
+  lvcreate -l 100%FREE MyVolGroup -n root
+
   mkfs.fat -F32 "${part_boot}"
-  mkswap "${part_swap}"
-  mkfs.ext4 "${part_root}"
+
+  mount /dev/MyVolGroup/root /mnt
+  swapon /dev/MyVolGroup/swap
+
+  mkfs.ext4 /dev/MyVolGroup/root
+  mkswap /dev/MyVolGroup/swap
 }
 
 #### Mount disks ####
 mountDisks() {
-  mount "${part_root}" /mnt
   mkdir /mnt/boot
-  mount "${part_boot}" /mnt/boot
+  mount ${part_boot} /mnt/boot
 }
 
 ##### pacstrap
 installArch() {
   pacman -Syy
-  pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio neovim git grub efibootmgr intel-ucode os-prober networkmanager zsh
+  pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio lvm2 neovim git grub efibootmgr intel-ucode os-prober networkmanager zsh
 }
 
 ##### generate hostname, host ip, locale(remember to update the en_US with a var)
@@ -77,12 +95,21 @@ genfstab -U /mnt >> /mnt/etc/fstab
 
 # update time TODO: make it dynamic by automatically select local time. or else a default one
 
+# grab the UUID of the system partition TODO: check if it is labled. if so, awk will need to print the 5th column instead of the 4th
+device_UUID=$(lsblk -f | grep $part_root | awk '{print $4}' )
+
 ###### grub, hardware clock
 (
 echo ln -sf /usr/share/zoneinfo/US/Pacific /etc/localtime
 echo hwclock --systohc
 echo locale-gen
 echo mkdir /boot/grub
+
+echo touch /etc/vconsole.conf
+echo sed -i 's/^HOOKS=(base udev autodetect.*$/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g' /etc/mkinitcpio.conf # WARNING: verify!!!
+echo mkinitcpio -P 
+echo sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"\$/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 rd.luks.name=${device_UUID}=cryptlvm root=\/dev\/MyVolGroup\/root\"/" /etc/default/grub
+
 echo grub-mkconfig -o /boot/grub/grub.cfg
 echo grub-install --target=x86_64-efi --efi-directory=/boot
 ) | arch-chroot /mnt
@@ -91,10 +118,9 @@ echo grub-install --target=x86_64-efi --efi-directory=/boot
 
 install() {
   customSetting
+  eraseDisk
   partitionDisks
   makeFilesystem
-  #### Turn on swap ####
-  swapon "${part_swap}"
   mountDisks
   installArch
   setHostInfo

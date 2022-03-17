@@ -13,7 +13,7 @@ setRoundedCorners() {
 }
 setRoundedCorners
 
-sudo sed -i 's/HOOKS=(base udev/HOOKS=(base systemd sd-plymouth/g' /etc/mkinitcpio.conf
+sudo sed -i 's/HOOKS=(base systemd/HOOKS=(base systemd sd-plymouth/g' /etc/mkinitcpio.conf
 sudo mkinitcpio -P
 sudo systemctl disable sddm
 sudo systemctl enable sddm-plymouth
