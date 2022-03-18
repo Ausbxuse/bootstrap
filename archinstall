@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
+# WARNING: this script will erase everything on the intended disk. Use with caution!
+
 set -e
 
-# TODO: need to verify the name
 # TODO: verify internet connection
-# TODO: disk encryption
 # TODO: i386 for grub?
 # TODO: dynamic swap size for different ram sizes
 # TODO: no confirm
@@ -16,21 +16,23 @@ device="/dev/sda"
 hostname="archbxuse"
 locale="en_US"
 
+percent_space_arch=50 # %
+
 customSetting() {
   echo "enter disk name:"
   read device
   echo "enter password:"
   read -s password
+  if [ $device == "/dev/nvme0n1" ]
+  then
+    part_boot="${device}p1"
+    part_root="${device}p2"
+  else
+    part_boot="${device}1"
+    part_root="${device}2"
+  fi
 }
 
-if [ $device == "/dev/nvme0n1" ]
-then
-  part_boot="${device}p1"
-  part_root="${device}p2"
-else
-  part_boot="${device}1"
-  part_root="${device}2"
-fi
 
 #### Erase empty disk ####
 eraseDisk() {
@@ -45,7 +47,7 @@ encryptDisk() {
   parted --script "${device}" -- mklabel gpt \
     mkpart ESP fat32 1MiB ${boot_size}MiB \
     set 1 boot on \
-    mkpart primary ext4 $(($boot_size + 1))MiB 100%
+    mkpart primary ext4 $(($boot_size + 1))MiB ${percent_space_arch}%
 
   cryptsetup luksFormat ${part_root} # sda2 contains the system(excluding the boot partition)
   cryptsetup open ${part_root} cryptlvm
@@ -96,7 +98,7 @@ genfstab -U /mnt >> /mnt/etc/fstab
 
 # update time TODO: make it dynamic by automatically select local time. or else a default one
 
-# grab the UUID of the system partition TODO: check if it is labled. if so, awk will need to print the 5th column instead of the 4th
+# grab the UUID of the system partition NOTE: check if it is labled. if so, awk will need to print the 5th column instead of the 4th
 device_UUID=$(lsblk -f | grep $(echo $part_root | sed "s/^.*\/\(.*$\)/\1/g") | awk '{print $4}' )
 
 ###### grub, hardware clock
