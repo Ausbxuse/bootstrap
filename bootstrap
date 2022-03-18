@@ -28,8 +28,6 @@ installConfig() {
   rm ~/README.md
   rm -rf ~/dots
   rm -rf ~/.git
-  cd ~/.config/nvim/utils
-  ./install.sh
 }
 
 addPacmanColor() {
