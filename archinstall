@@ -78,7 +78,6 @@ mountDisks() {
 
 ##### pacstrap
 installArch() {
-  pacman -Syy
   pacstrap /mnt base base-devel linux linux-firmware systemd mkinitcpio lvm2 neovim git grub efibootmgr intel-ucode os-prober networkmanager zsh
 }
 

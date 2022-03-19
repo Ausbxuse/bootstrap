@@ -12,10 +12,4 @@ createUser() {
   chsh -s /usr/bin/zsh peter
 }
 
-connectWifi() {
-  systemctl enable NetworkManager --now
-}
-
-
 createUser
-connectWifi
