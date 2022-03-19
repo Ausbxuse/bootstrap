@@ -17,7 +17,7 @@ installPackages() {
   paru -Syyu --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty
   sudo systemctl enable sddm
   # install rest
-  paru -S --noconfirm rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect
+  paru -S --noconfirm rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing
   # install aur packages(openvpn3-git currently broken)
   paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git zsh-fast-syntax-highlighting
 }
@@ -25,9 +25,6 @@ installPackages() {
 installConfig() {
   git clone --recursive https://github.com/ausbxuse/dots
   rsync -av dots/ ~/
-  rm ~/README.md
-  rm -rf ~/dots
-  rm -rf ~/.git
 }
 
 addPacmanColor() {
@@ -54,6 +51,13 @@ setTime() {
   sudo timedatectl set-ntp 1
 }
 
+cleanUp() {
+  rm ~/README.md
+  rm -rf ~/dots
+  rm -rf ~/.git
+  rm -rf ~/go
+}
+
 main() {
   installParu
   addPacmanColor
@@ -64,6 +68,7 @@ main() {
   setPlocate
   setZsh
   setTime
+  cleanUp
 }
 
 main

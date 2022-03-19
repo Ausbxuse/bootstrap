@@ -16,13 +16,26 @@ device="/dev/sda"
 hostname="archbxuse"
 locale="en_US"
 
-percent_space_arch=50 # %
+percent_space_arch=100 # %
 
 customSetting() {
   echo "enter disk name:"
   read device
+  echo "enter disk size (percentage):"
+  read percent_space_arch # TODO: defaults to 100%
   echo "enter password:"
   read -s password
+  echo "confirm password:"
+  read -s password_conf
+
+  if [ $password == $password_conf ]
+  then
+    echo "passwords match"
+  else
+    echo "passwords do not match, exiting"
+    exit 2
+  fi
+
   if [ $device == "/dev/nvme0n1" ]
   then
     part_boot="${device}p1"
@@ -30,6 +43,19 @@ customSetting() {
   else
     part_boot="${device}1"
     part_root="${device}2"
+  fi
+}
+
+confirmation() {
+  echo "########### Confirmation ###########"
+  lsblk
+  echo "${percent_space_arch}% of $device will be used for installing Arch Linux"
+  echo "Are you sure you want to preceed? [y/N] "
+  read ans
+  if [ $ans != "y" ]
+  then
+    echo "aborted, exiting..."
+    exit 4
   fi
 }
 
@@ -120,6 +146,7 @@ echo grub-install --target=x86_64-efi --efi-directory=/boot
 
 install() {
   customSetting
+  confirmation
   # eraseDisk # TODO:buggy
   encryptDisk
   mountDisks
