@@ -35,9 +35,9 @@ The installation process takes about 10~30 minutes depending on the hardware and
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/bootstrap)"
 ```
 
-### To setup a flickerless boot screen, run:
+### To beautify the desktop environment a little more, run:
 ```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/flickerless)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/postinstall)"
 ```
 
 ## What's next
