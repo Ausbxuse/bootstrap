@@ -41,4 +41,4 @@ The installation process takes about 10~30 minutes depending on the hardware and
 ```
 
 ## What's next
-After you run the scripts successfully, you will need to manually setup GRUB theme and SDDM theme, brave settings, spectacle screenshot location, dynamic wallpapers, and fcitx for other input methods and its theme and shortcut.
+After you run the scripts successfully, you will need to manually setup GRUB theme and SDDM theme, kvantum, brave settings, spectacle screenshot location, dynamic wallpapers, and fcitx for other input methods and its theme and shortcut.

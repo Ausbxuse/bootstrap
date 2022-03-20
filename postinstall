@@ -14,10 +14,10 @@ setRoundedCorners() {
 setRoundedCorners
 sudo systemctl enable --now touchegg
 
-# sudo sed -i 's/HOOKS=(base systemd/HOOKS=(base systemd sd-plymouth/g' /etc/mkinitcpio.conf
-# sudo mkinitcpio -P
-# sudo systemctl disable sddm
-# sudo systemctl enable sddm-plymouth
+sudo sed -i 's/HOOKS=(base systemd/HOOKS=(base systemd sd-plymouth/g' /etc/mkinitcpio.conf
+sudo mkinitcpio -P
+sudo systemctl disable sddm
+sudo systemctl enable sddm-plymouth
 
 # paru -S grub-silent
 # sudo grub-install --target=x86_64-efi --efi-directory=/boot
@@ -46,6 +46,6 @@ sudo systemctl enable --now touchegg
 # sudo systemctl daemon-reload
 
 # install grub theme
-./.local/src/public-repos/matter/matter.py -i arch arch arch windows laptop -ff ~/.local/share/fonts/victor-pixel.ttf -fn victor -fs 40
+./.local/src/public-repos/matter/matter.py -i arch arch arch arch microsoft-windows laptop -ff ~/.local/share/fonts/victor-pixel.ttf -fn victor -fs 40
 # cd ~/Downloads && git clone https://github.com/MarianArlt/kde-plasma-chili
 # sudo tar -xzvf ~/Downloads/kde-plasma-chili.tar.gz -C /usr/share/sddm/themes
