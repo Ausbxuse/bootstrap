@@ -25,11 +25,6 @@ The installation process takes about 10~30 minutes depending on the hardware and
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/archinstall)"
 ```
 
-### To setup a user, login as root and run:
-```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/genuser)"
-```
-
 ### To install my configuration, reboot again and login as $USER created above, cd to homd directory, and run:
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ausbxuse/bootstrap/master/bootstrap)"
