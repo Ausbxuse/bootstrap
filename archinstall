@@ -52,8 +52,6 @@ customSetting() {
     exit 2
   fi
 
-  then
-
   if [ $device == "/dev/nvme0n1" ]
   then
     part_boot="${device}p1"
@@ -162,14 +160,13 @@ echo "chsh -s /usr/bin/zsh peter"
 echo "su - peter bash -c \"
 git clone https://aur.archlinux.org/paru-bin
 cd paru-bin
-echo -e \"Y\" | makepkg -si && cd ~/ && rm -rf paru-bin
+echo -e \"Y\" | makepkg -si && cd /home/$user/ && rm -rf paru-bin
 
 paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git zsh-fast-syntax-highlighting
 
-git clone --recursive https://github.com/ausbxuse/dots
-rsync -av --remove-source-files dots/ ~/
+git clone --recursive https://github.com/ausbxuse/dots && rsync -av --remove-source-files /home/$user/dots/ /home/$user/
 
-mkdir ~/.cache/zsh
+mkdir /home/$user/.cache/zsh
 \""
 
 
@@ -184,9 +181,11 @@ echo "updatedb"
 
 echo "
 rm home/$user/README.md
+rm home/$user/.gitignore
 rm -rf home/$user/dots
 rm -rf home/$user/.git
 rm -rf home/$user/go
+rm -rf home/$user/.gitmodules
 rmdir home/$user/.local/share/themes
 "
 
