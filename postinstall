@@ -7,6 +7,13 @@ setRoundedCorners() {
   cd LightlyShaders2; rm -rf qt5build; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install && (kwin_x11 --replace &)
 }
 
+setPlymouth() {
+  paru -S plymouth-git
+  sudo systemctl enable sddm
+  sed -i 's/^HOOKS=(base systemd/HOOKS=(base systemd sd-plymouth/g' /etc/mkinitcpio.conf
+}
+
 setRoundedCorners
+setPlymouth
 
 ~/.local/src/public-repos/matter/matter.py -i arch arch arch arch microsoft-windows laptop -ff ~/.local/share/fonts/victor-pixel.ttf -fn victor -fs 40

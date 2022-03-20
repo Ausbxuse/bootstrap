@@ -9,11 +9,12 @@ set -e
 # TODO: dynamic swap size for different ram sizes
 # TODO: add kernel parameters to quiet down, allow os-prober
 # TODO: add kernel parameters to quiet down 
+# TODO: plymouth 
+
+# TODO: dots never got copied
 
 boot_size=512 #MiB
-
 device="/dev/sda"
-
 hostname="archbxuse"
 locale="en_US"
 
@@ -153,31 +154,45 @@ echo "timedatectl set-ntp 1"
 
 echo "sed -i 's/\#Color/Color/g' /etc/pacman.conf"
 echo useradd $user -m -G wheel
-echo "echo -e \"${userpass}\n${userpass}\" | passwd root"
+echo "echo -e \"${userpass}\n${userpass}\" | passwd $user"
 echo "echo \"%wheel ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers" # TODO: add password after the installation is finished
 echo "chsh -s /usr/bin/zsh peter"
 
-echo "su - peter bash -c \"
+echo "pacman -S --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
+"
+echo "systemctl enable NetworkManager"
+echo "systemctl enable touchegg"
+echo "systemctl enable sddm"
+echo "updatedb"
+
+echo ln -sf /usr/share/zoneinfo/US/Pacific /etc/localtime
+echo hwclock --systohc
+echo locale-gen
+echo mkdir /boot/grub
+
+echo touch /etc/vconsole.conf
+echo "sed -i 's/^HOOKS=(base udev autodetect.*\$/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g' /etc/mkinitcpio.conf"
+echo mkinitcpio -P 
+echo "sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"\$/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 rd.luks.name=${device_UUID}=cryptlvm root=\/dev\/MyVolGroup\/root\"/' /etc/default/grub"
+
+echo grub-mkconfig -o /boot/grub/grub.cfg
+echo grub-install --target=x86_64-efi --efi-directory=/boot
+
+) | arch-chroot /mnt
+
+}
+
+installConfig() {
+(echo "su - peter bash -c \"
 git clone https://aur.archlinux.org/paru-bin
 cd paru-bin
 echo -e \"Y\" | makepkg -si && cd /home/$user/ && rm -rf paru-bin
-
-paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono plymouth-git zsh-fast-syntax-highlighting
-
-git clone --recursive https://github.com/ausbxuse/dots && rsync -av --remove-source-files /home/$user/dots/ /home/$user/
-
-mkdir /home/$user/.cache/zsh
+paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono zsh-fast-syntax-highlighting
 \""
 
-
+echo "su - peter bash -c \"git clone --recursive https://github.com/ausbxuse/dots && rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
 echo "mv /home/$user/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir /home/$user/.local/share/themes"
 echo "mv /home/$user/.local/share/stardict /usr/share"
-
-echo "pacman -S --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
-"
-echo "systemctl enable touchegg"
-echo "systemctl enable sddm-plymouth"
-echo "updatedb"
 
 echo "
 rm home/$user/README.md
@@ -188,19 +203,6 @@ rm -rf home/$user/go
 rm -rf home/$user/.gitmodules
 rmdir home/$user/.local/share/themes
 "
-
-echo ln -sf /usr/share/zoneinfo/US/Pacific /etc/localtime
-echo hwclock --systohc
-echo locale-gen
-echo mkdir /boot/grub
-
-echo touch /etc/vconsole.conf
-echo "sed -i 's/^HOOKS=(base udev autodetect.*\$/HOOKS=(base systemd sd-plymouth autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g' /etc/mkinitcpio.conf"
-echo mkinitcpio -P 
-echo "sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"\$/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 rd.luks.name=${device_UUID}=cryptlvm root=\/dev\/MyVolGroup\/root\"/' /etc/default/grub"
-
-echo grub-mkconfig -o /boot/grub/grub.cfg
-echo grub-install --target=x86_64-efi --efi-directory=/boot
 ) | arch-chroot /mnt
 
 }
@@ -213,6 +215,7 @@ install() {
   mountDisks
   installArch
   setHostInfo
+  installConfig
   ###### add a password
   echo "root:$password" | chpasswd --root /mnt
 }
