@@ -4,14 +4,21 @@
 
 set -e
 
-# TODO: verify internet connection
-# TODO: i386 for grub?
-# TODO: dynamic swap size for different ram sizes
 # TODO: add kernel parameters to quiet down, allow os-prober
-# TODO: add kernel parameters to quiet down 
-# TODO: plymouth 
+# TODO: nvim language servers
+# TODO: barheight
 
-# TODO: dots never got copied
+# TODO: plymouth 
+# TODO: display scale
+# TODO: fcitx
+# TODO: brave
+# TODO: matter grub and detect windows and silent grub
+# TODO: sddm
+# TODO: rounded corners
+# TODO: kvantum
+# TODO: bluetooth(pairing and both system)
+# TODO: trackpad
+# TODO: video driver
 
 boot_size=512 #MiB
 device="/dev/sda"
@@ -183,27 +190,27 @@ echo grub-install --target=x86_64-efi --efi-directory=/boot
 }
 
 installConfig() {
-(echo "su - peter bash -c \"
-git clone https://aur.archlinux.org/paru-bin
-cd paru-bin
-echo -e \"Y\" | makepkg -si && cd /home/$user/ && rm -rf paru-bin
-paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono zsh-fast-syntax-highlighting
-\""
+  (
+  echo "su - peter bash -c \"
+  git clone https://aur.archlinux.org/paru-bin
+  cd paru-bin
+  echo -e \"Y\" | makepkg -si && cd /home/$user/ && rm -rf paru-bin
+  paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono zsh-fast-syntax-highlighting
+  \""
 
-echo "su - peter bash -c \"git clone --recursive https://github.com/ausbxuse/dots && rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
-echo "mv /home/$user/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir /home/$user/.local/share/themes"
-echo "mv /home/$user/.local/share/stardict /usr/share"
+  echo "su - peter bash -c \"git clone --recursive https://github.com/ausbxuse/dots && rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
+  echo "mv /home/$user/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir /home/$user/.local/share/themes"
+  echo "mv /home/$user/.local/share/stardict /usr/share"
 
-echo "
-rm home/$user/README.md
-rm home/$user/.gitignore
-rm -rf home/$user/dots
-rm -rf home/$user/.git
-rm -rf home/$user/go
-rm -rf home/$user/.gitmodules
-rmdir home/$user/.local/share/themes
-"
-) | arch-chroot /mnt
+  echo "
+  rm home/$user/README.md
+  rm home/$user/.gitignore
+  rm -rf home/$user/dots
+  rm -rf home/$user/.git
+  rm -rf home/$user/go
+  rm -rf home/$user/.gitmodules
+  "
+  ) | arch-chroot /mnt
 
 }
 
