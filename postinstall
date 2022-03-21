@@ -1,19 +1,13 @@
 #!/usr/bin/env bash
 
-setRoundedCorners() {
-  cd ~/.local/src/public-repos
-  git clone https://github.com/ausbxuse/LightlyShaders2
-  cd LightlyShaders2; rm -rf qt5build; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install && (kwin_x11 --replace &)
-}
-
 setPlymouth() {
   paru -S --noconfirm plymouth-git
   sudo sed -i 's/^HOOKS=(base systemd/HOOKS=(base systemd sd-plymouth/g' /etc/mkinitcpio.conf
   sudo systemctl disable sddm
   sudo systemctl enable sddm-plymouth
+  # TODO: add splash
 }
 
-setRoundedCorners
 # setPlymouth ## currently broken in VBox
 
 ~/.local/src/public-repos/matter/matter.py -i arch arch arch arch microsoft-windows laptop -ff ~/.local/share/fonts/victor-pixel.ttf -fn victor -fs 40

@@ -9,13 +9,13 @@ set -e
 # TODO: barheight
 
 # TODO: plymouth 
+# TODO: matter grub and detect windows and silent grub
+
+# TODO: kvantum
 # TODO: display scale
 # TODO: fcitx
 # TODO: brave
-# TODO: matter grub and detect windows and silent grub
 # TODO: sddm
-# TODO: rounded corners
-# TODO: kvantum
 # TODO: bluetooth(pairing and both system)
 # TODO: trackpad
 # TODO: video driver
@@ -214,6 +214,14 @@ installConfig() {
 
 }
 
+setRoundedCorners() {
+  echo "su - peter bash -c \"
+  cd /home/$user/.local/src/public-repos
+  git clone https://github.com/ausbxuse/LightlyShaders2
+  cd LightlyShaders2; rm -rf qt5build; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
+  \"" | arch-chroot /mnt
+}
+
 install() {
   customSetting
   confirmation
@@ -223,6 +231,7 @@ install() {
   installArch
   setHostInfo
   installConfig
+  setRoundedCorners
   ###### add a password
   echo "root:$password" | chpasswd --root /mnt
 }
