@@ -242,7 +242,6 @@ installConfig() {
   sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^\#//' /etc/pacman.conf
 
   sed -i '/\[custom-official\]/,+2 s/^/#/' /etc/pacman.conf
-  pacman -Sy
   "
   ) | arch-chroot /mnt
 
