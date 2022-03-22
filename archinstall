@@ -178,6 +178,23 @@ echo useradd $user -m -G wheel
 echo "echo \"%wheel ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers" # TODO: add password after the installation is finished
 echo "chsh -s /usr/bin/zsh peter"
 
+echo "
+sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
+cat >>/etc/pacman.conf <<EOF
+
+[custom-official]
+SigLevel = Optional TrustAll
+Server = file:///root/officials-repos
+
+[custom-aur]
+SigLevel = Optional TrustAll
+Server = file:///root/aur-repos
+
+EOF
+
+pacman -Syu
+"
+
 echo "pacman -S --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
 "
 echo "systemctl enable NetworkManager"
@@ -212,20 +229,6 @@ installConfig() {
   cd paru-bin
   echo -e \"Y\" | makepkg -si && cd /home/$user/
 
-  sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
-  cat >>/etc/pacman.conf <<EOF
-
-  [custom-official]
-  SigLevel = Optional TrustAll
-  Server = file:///root/officials-repos
-
-  [custom-aur]
-  SigLevel = Optional TrustAll
-  Server = file:///root/aur-repos
-
-  EOF
-
-  pacman -Syu
 
   paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono zsh-fast-syntax-highlighting
   \""
