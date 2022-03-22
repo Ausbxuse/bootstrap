@@ -160,7 +160,7 @@ EOF
 ##### generate fstab config file
 genfstab -U /mnt >> /mnt/etc/fstab
 
-cp -r ~/dots ~/bootstrap ~/paru-bin /mnt/root/
+cp -r ~/official-repos ~/aur-repos ~/dots ~/bootstrap ~/paru-bin /mnt/root/
 
 # update time TODO: make it dynamic by automatically select local time. or else a default one
 
