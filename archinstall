@@ -136,7 +136,7 @@ sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
 cat >> /etc/pacman.conf << EOF
 [custom-official]
 SigLevel = Optional TrustAll
-Server = file:///root/official-repos
+Server = file:///root/official-repo
 EOF
 
 pacman -Syy
@@ -160,7 +160,7 @@ EOF
 ##### generate fstab config file
 genfstab -U /mnt >> /mnt/etc/fstab
 
-cp -r ~/official-repos ~/aur-repos ~/dots ~/bootstrap ~/paru-bin /mnt/root/
+cp -r ~/official-repo ~/aur-packages ~/dots ~/bootstrap /mnt/root/
 
 # update time TODO: make it dynamic by automatically select local time. or else a default one
 
@@ -184,11 +184,7 @@ cat >>/etc/pacman.conf <<EOF
 
 [custom-official]
 SigLevel = Optional TrustAll
-Server = file:///root/officials-repos
-
-[custom-aur]
-SigLevel = Optional TrustAll
-Server = file:///root/aur-repos
+Server = file:///root/official-repo
 
 EOF
 
@@ -197,6 +193,10 @@ pacman -Syu
 
 echo "pacman -S --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
 "
+
+# Deps for aur
+echo "pacman -S --noconfirm alsa-lib gtk3 libxss nss ttf-font glibc libinput cairo systemd-libs libx11 libxi libxrandr libxtst pugixml glib2"
+
 echo "systemctl enable NetworkManager"
 echo "systemctl enable touchegg"
 echo "systemctl enable sddm"
@@ -216,8 +216,8 @@ echo grub-mkconfig -o /boot/grub/grub.cfg
 echo grub-install --target=x86_64-efi --efi-directory=/boot
 
 # mv items
-echo "mv /root/paru-bin /root/dots /root/bootstrap /home/$user/"
-echo "chown -R $user:wheel /home/$user/paru-bin /home/$user/dots /home/$user/bootstrap"
+echo "mv /root/dots /root/bootstrap /home/$user/"
+echo "chown -R $user:wheel /home/$user/dots /home/$user/bootstrap"
 
 ) | arch-chroot /mnt
 
@@ -225,13 +225,7 @@ echo "chown -R $user:wheel /home/$user/paru-bin /home/$user/dots /home/$user/boo
 
 installConfig() {
   (
-  echo "su - peter bash -c \"
-  cd paru-bin
-  echo -e \"Y\" | makepkg -si && cd /home/$user/
-
-
-  paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono zsh-fast-syntax-highlighting
-  \""
+  echo "pacman -U --noconfirm ~/aur-packages/*.tar.zst"
 
   echo "su - peter bash -c \"rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
   echo "mv /home/$user/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir /home/$user/.local/share/themes"
@@ -241,16 +235,14 @@ installConfig() {
   echo "
   rm /home/$user/README.md
   rm /home/$user/.gitignore
-  rm -rf /home/$user/paru-bin
   rm -rf /home/$user/dots
   rm -rf /home/$user/.git
-  rm -rf /home/$user/go
   rm -rf /home/$user/.gitmodules
 
   sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^\#//' /etc/pacman.conf
 
-  sed -i '/\[custom-aur\]\|\[custom-official\]/,+2 s/^/#/' /etc/pacman.conf
-  pacman -Syu
+  sed -i '/\[custom-official\]/,+2 s/^/#/' /etc/pacman.conf
+  pacman -Sy
   "
   ) | arch-chroot /mnt
 
