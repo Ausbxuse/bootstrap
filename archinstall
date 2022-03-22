@@ -134,9 +134,9 @@ mountDisks() {
 addLocalPackages() {
 sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
 cat >>/etc/pacman.conf <<EOF
-[custom]
+[custom-official]
 SigLevel = Optional TrustAll
-Server = file:///root/packages
+Server = file:///root/official-repos
 EOF
 pacman -Syu
 }
@@ -213,6 +213,7 @@ installConfig() {
 
   sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
   cat >>/etc/pacman.conf <<EOF
+
   [custom-official]
   SigLevel = Optional TrustAll
   Server = file:///root/officials-repos
@@ -220,7 +221,9 @@ installConfig() {
   [custom-aur]
   SigLevel = Optional TrustAll
   Server = file:///root/aur-repos
+
   EOF
+
   pacman -Syu
 
   paru -S --noconfirm lf touchegg brave-bin ttf-meslo-nerd-font-powerlevel10k nerd-fonts-jetbrains-mono zsh-fast-syntax-highlighting
