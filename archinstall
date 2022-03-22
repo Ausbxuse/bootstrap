@@ -213,9 +213,13 @@ installConfig() {
 
   sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
   cat >>/etc/pacman.conf <<EOF
-  [custom]
+  [custom-official]
   SigLevel = Optional TrustAll
-  Server = file:///root/packages
+  Server = file:///root/officials-repos
+
+  [custom-aur]
+  SigLevel = Optional TrustAll
+  Server = file:///root/aur-repos
   EOF
   pacman -Syu
 
@@ -237,11 +241,8 @@ installConfig() {
   rm -rf /home/$user/.gitmodules
 
   sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^\#//' /etc/pacman.conf
-  cat >>/etc/pacman.conf <<EOF
-  [custom]
-  SigLevel = Optional TrustAll
-  Server = file:///root/packages
-  EOF
+
+  sed -i '/\[custom-aur\]\|\[custom-official\]/,+2 s/^/#/' /etc/pacman.conf
   pacman -Syu
   "
   ) | arch-chroot /mnt
