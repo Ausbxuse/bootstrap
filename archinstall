@@ -251,7 +251,7 @@ installConfig() {
 setRoundedCorners() {
   echo "su - peter bash -c \"
   cd /home/$user/.local/src/public-repos
-  cd LightlyShaders2; rm -rf qt5build; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
+  cd LightlyShaders2; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
   \"" | arch-chroot /mnt
 }
 
@@ -261,6 +261,7 @@ install() {
   # eraseDisk # TODO:buggy
   encryptDisk
   mountDisks
+  addLocalPackages
   installArch
   setHostInfo
   installConfig
