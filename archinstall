@@ -133,12 +133,13 @@ mountDisks() {
 ##### pacstrap
 addLocalPackages() {
 sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
-cat >>/etc/pacman.conf <<EOF
+cat >> /etc/pacman.conf << EOF
 [custom-official]
 SigLevel = Optional TrustAll
 Server = file:///root/official-repos
 EOF
-pacman -Syu
+
+pacman -Syy
 }
 
 installArch() {
