@@ -4,22 +4,6 @@
 
 set -e
 
-# TODO: add kernel parameters to quiet down, allow os-prober
-# TODO: nvim language servers
-# TODO: barheight
-
-# TODO: plymouth 
-# TODO: matter grub and detect windows and silent grub
-
-# TODO: kvantum
-# TODO: display scale
-# TODO: fcitx
-# TODO: brave
-# TODO: sddm
-# TODO: bluetooth(pairing and both system)
-# TODO: trackpad
-# TODO: video driver
-
 boot_size=512 #MiB
 device="/dev/sda"
 hostname="archbxuse"
@@ -176,7 +160,7 @@ echo "sed -i 's/\#Color/Color/g' /etc/pacman.conf"
 echo useradd $user -m -G wheel
 # echo "echo -e \"${userpass}\n${userpass}\" | passwd $user"
 echo "echo \"%wheel ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers" # TODO: add password after the installation is finished
-echo "chsh -s /usr/bin/zsh peter"
+echo "chsh -s /usr/bin/zsh $user"
 
 echo "
 sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
@@ -191,11 +175,11 @@ EOF
 pacman -Syu
 "
 
-echo "pacman -S --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin
+echo "pacman -S --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin kvantum
 "
 
 # Deps for aur
-echo "pacman -S --noconfirm alsa-lib gtk3 libxss nss ttf-font glibc libinput cairo systemd-libs libx11 libxi libxrandr libxtst pugixml glib2"
+echo "pacman -S --noconfirm alsa-lib gtk3 libxss nss ttf-font glibc libinput cairo systemd-libs libx11 libxi libxrandr libxtst pugixml glib2 libdrm pango"
 
 echo "systemctl enable NetworkManager"
 echo "systemctl enable touchegg"
@@ -227,7 +211,7 @@ installConfig() {
   (
   echo "pacman -U --noconfirm ~/aur-packages/*.tar.zst"
 
-  echo "su - peter bash -c \"rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
+  echo "su - $user bash -c \"rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
   echo "mv /home/$user/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir /home/$user/.local/share/themes"
   echo "mv /home/$user/.local/share/stardict /usr/share"
 
@@ -248,16 +232,58 @@ installConfig() {
 }
 
 setRoundedCorners() {
-  echo "su - peter bash -c \"
+  echo "su - $user bash -c \"
   cd /home/$user/.local/src/public-repos
   cd LightlyShaders2; mkdir qt5build; cd qt5build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
   \"" | arch-chroot /mnt
 }
 
+setSDDM() {
+  echo "
+  mkdir /etc/sddm.conf.d
+
+cat >> /etc/sddm.conf.d/kde_settings.conf << EOF
+[Autologin]
+Relogin=false
+Session=
+User=
+
+[General]
+HaltCommand=/usr/bin/systemctl poweroff
+RebootCommand=/usr/bin/systemctl reboto
+
+[Theme]
+Current=breeze
+
+[Users]
+MaximumUid=60513
+MinimumUid=1000
+
+EOF
+  
+  " | arch-chroot /mnt
+}
+
+setGrubTheme() {
+  echo "
+  /home/$user/.local/src/public-repos/matter/matter.py -i arch arch arch arch laptop -ff /home/$user/.local/share/fonts/victor-pixel.ttf -fn victor -fs 40
+  " | arch-chroot /mnt
+}
+
+# does not work in VM 
+setPlymouth() {
+  echo "
+  sed -i 's/^HOOKS=(base systemd/HOOKS=(base systemd sd-plymouth/g' /etc/mkinitcpio.conf
+  mkinitcpio -P
+  systemctl disable sddm
+  systemctl enable sddm-plymouth
+  " | arch-chroot /mnt
+}
+
 install() {
   customSetting
   confirmation
-  # eraseDisk # TODO:buggy
+  # eraseDisk # FIXME: causes the disk unable to work with in VBox
   encryptDisk
   mountDisks
   addLocalPackages
@@ -265,6 +291,9 @@ install() {
   setHostInfo
   installConfig
   setRoundedCorners
+  setSDDM
+  setGrubTheme
+  # setPlymouth
   ###### add a password
   echo "root:$password" | chpasswd --root /mnt
   echo "$user:$userpass" | chpasswd --root /mnt
