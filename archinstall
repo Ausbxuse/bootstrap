@@ -144,24 +144,42 @@ EOF
 ##### generate fstab config file
 genfstab -U /mnt >> /mnt/etc/fstab
 
-cp -r ~/official-repo ~/aur-packages ~/dots ~/bootstrap /mnt/root/
-
-# update time TODO: make it dynamic by automatically select local time. or else a default one
-
-# grab the UUID of the system partition NOTE: check if it is labled. if so, awk will need to print the 5th column instead of the 4th
-device_UUID=$(lsblk -f | grep $(echo $part_root | sed "s/^.*\/\(.*$\)/\1/g") | awk '{print $4}' )
-
 ###### grub, hardware clock
 (
-
 echo "timedatectl set-ntp 1"
-
 echo "sed -i 's/\#Color/Color/g' /etc/pacman.conf"
 echo useradd $user -m -G wheel
 # echo "echo -e \"${userpass}\n${userpass}\" | passwd $user"
-echo "echo \"%wheel ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers" # TODO: add password after the installation is finished
+echo "echo \"%wheel ALL=(ALL) ALL\" >> /etc/sudoers"
+echo "echo \"%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/paru,/usr/bin/pacman -Syyuw --noconfirm\" >> /etc/sudoers"
+
 echo "chsh -s /usr/bin/zsh $user"
 
+echo ln -sf /usr/share/zoneinfo/US/Pacific /etc/localtime
+echo hwclock --systohc
+echo locale-gen
+echo touch /etc/vconsole.conf
+) | arch-chroot /mnt
+}
+
+
+installGrub() {
+# grab the UUID of the system partition NOTE: check if it is labled. if so, awk will need to print the 5th column instead of the 4th
+device_UUID=$(lsblk -f | grep $(echo $part_root | sed "s/^.*\/\(.*$\)/\1/g") | awk '{print $4}' )
+(
+echo mkdir /boot/grub
+echo "sed -i 's/^HOOKS=(base udev autodetect.*\$/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g' /etc/mkinitcpio.conf"
+echo mkinitcpio -P 
+echo "sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"\$/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 rd.luks.name=${device_UUID}=cryptlvm root=\/dev\/MyVolGroup\/root\"/' /etc/default/grub"
+
+echo grub-mkconfig -o /boot/grub/grub.cfg
+echo grub-install --target=x86_64-efi --efi-directory=/boot
+) | arch-chroot /mnt
+}
+
+
+installPackages() {
+(
 echo "
 sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
 cat >>/etc/pacman.conf <<EOF
@@ -177,40 +195,22 @@ pacman -Syu
 
 echo "pacman -S --noconfirm plasma xorg-server xorg-xinit sddm-kcm alacritty rsync exa bat tmux unzip xclip xsel pass ncdu dolphin unclutter noto-fonts-emoji sxiv zathura-pdf-mupdf adobe-source-han-sans-otc-fonts adobe-source-han-serif-otc-fonts bluez-utils fd neofetch htop ripgrep plocate fzf ksysguard okular mpv lsof man-db zbar spectacle tumbler trash-cli elisa zip pulseaudio-bluetooth bc android-tools python-pip ueberzug capitaine-cursors sdcv kcm-fcitx fcitx-sunpinyin gimp kdeconnect syncthing make cmake gcc gettext extra-cmake-modules qt5-tools qt5-x11extras kcrash kglobalaccel kde-dev-utils kio knotifications kinit kwin kvantum
 "
-
 # Deps for aur
 echo "pacman -S --noconfirm alsa-lib gtk3 libxss nss ttf-font glibc libinput cairo systemd-libs libx11 libxi libxrandr libxtst pugixml glib2 libdrm pango"
-
+echo "pacman -U --noconfirm ~/aur-packages/*.tar.zst"
 echo "systemctl enable NetworkManager"
 echo "systemctl enable touchegg"
 echo "systemctl enable sddm"
 echo "updatedb"
-
-echo ln -sf /usr/share/zoneinfo/US/Pacific /etc/localtime
-echo hwclock --systohc
-echo locale-gen
-echo mkdir /boot/grub
-
-echo touch /etc/vconsole.conf
-echo "sed -i 's/^HOOKS=(base udev autodetect.*\$/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/g' /etc/mkinitcpio.conf"
-echo mkinitcpio -P 
-echo "sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"\$/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 rd.luks.name=${device_UUID}=cryptlvm root=\/dev\/MyVolGroup\/root\"/' /etc/default/grub"
-
-echo grub-mkconfig -o /boot/grub/grub.cfg
-echo grub-install --target=x86_64-efi --efi-directory=/boot
-
-# mv items
-echo "mv /root/dots /root/bootstrap /home/$user/"
-echo "chown -R $user:wheel /home/$user/dots /home/$user/bootstrap"
-
 ) | arch-chroot /mnt
-
 }
 
 installConfig() {
+  cp -r ~/official-repo ~/aur-packages ~/dots ~/bootstrap /mnt/root/
   (
-  echo "pacman -U --noconfirm ~/aur-packages/*.tar.zst"
-
+  # mv items
+  echo "mv /root/dots /root/bootstrap /home/$user/"
+  echo "chown -R $user:wheel /home/$user/dots /home/$user/bootstrap"
   echo "su - $user bash -c \"rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
   echo "mv /home/$user/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir /home/$user/.local/share/themes"
   echo "mv /home/$user/.local/share/stardict /usr/share"
