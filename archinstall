@@ -150,8 +150,8 @@ echo "timedatectl set-ntp 1"
 echo "sed -i 's/\#Color/Color/g' /etc/pacman.conf"
 echo useradd $user -m -G wheel
 # echo "echo -e \"${userpass}\n${userpass}\" | passwd $user"
-echo "echo \"%wheel ALL=(ALL) ALL\" >> /etc/sudoers"
-echo "echo \"%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/paru,/usr/bin/pacman -Syyuw --noconfirm\" >> /etc/sudoers"
+# FIXME:need no passwd fist
+echo "echo \"%wheel ALL=(ALL) NOPASSWD: ALL #AURTEMP\" >> /etc/sudoers"
 
 echo "chsh -s /usr/bin/zsh $user"
 
@@ -224,9 +224,13 @@ installConfig() {
   rm -rf /home/$user/.gitmodules
 
   sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^\#//' /etc/pacman.conf
-
   sed -i '/\[custom-official\]/,+2 s/^/#/' /etc/pacman.conf
+  sed -i '/#AURTEMP/d' /etc/sudoers
+
+  echo \"%wheel ALL=(ALL) ALL
+  %wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/paru,/usr/bin/pacman -Syyuw --noconfirm\" >> /etc/sudoers
   "
+  
   ) | arch-chroot /mnt
 
 }
@@ -288,6 +292,9 @@ install() {
   mountDisks
   addLocalPackages
   installArch
+  ###### add a password
+  echo "root:$password" | chpasswd --root /mnt
+  echo "$user:$userpass" | chpasswd --root /mnt
   setHostInfo
   installGrub
   installPackages
@@ -296,9 +303,6 @@ install() {
   setSDDM
   setGrubTheme
   # setPlymouth
-  ###### add a password
-  echo "root:$password" | chpasswd --root /mnt
-  echo "$user:$userpass" | chpasswd --root /mnt
 }
 
 install
