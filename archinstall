@@ -179,6 +179,7 @@ echo grub-install --target=x86_64-efi --efi-directory=/boot
 
 
 installPackages() {
+  cp -r ~/official-repo ~/aur-packages ~/dots ~/bootstrap /mnt/root/
 (
 echo "
 sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^/#/' /etc/pacman.conf
@@ -206,7 +207,6 @@ echo "updatedb"
 }
 
 installConfig() {
-  cp -r ~/official-repo ~/aur-packages ~/dots ~/bootstrap /mnt/root/
   (
   # mv items
   echo "mv /root/dots /root/bootstrap /home/$user/"
