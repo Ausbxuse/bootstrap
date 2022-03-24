@@ -214,25 +214,7 @@ installConfig() {
   echo "su - $user bash -c \"rsync -av --remove-source-files /home/$user/dots/ /home/$user/; mkdir /home/$user/.cache/zsh \""
   echo "mv /home/$user/.local/share/themes/Orchis-dark /usr/share/themes/ && sudo rmdir /home/$user/.local/share/themes"
   echo "mv /home/$user/.local/share/stardict /usr/share"
-
-  # clean up
-  echo "
-  rm /home/$user/README.md
-  rm /home/$user/.gitignore
-  rm -rf /home/$user/dots
-  rm -rf /home/$user/.git
-  rm -rf /home/$user/.gitmodules
-
-  sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^\#//' /etc/pacman.conf
-  sed -i '/\[custom-official\]/,+2 s/^/#/' /etc/pacman.conf
-  sed -i '/#AURTEMP/d' /etc/sudoers
-
-  echo \"%wheel ALL=(ALL) ALL
-  %wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/paru,/usr/bin/pacman -Syyuw --noconfirm\" >> /etc/sudoers
-  "
-  
   ) | arch-chroot /mnt
-
 }
 
 setRoundedCorners() {
@@ -283,6 +265,23 @@ setPlymouth() {
   systemctl enable sddm-plymouth
   " | arch-chroot /mnt
 }
+ 
+cleanUp() {
+  echo "
+  rm /home/$user/README.md
+  rm /home/$user/.gitignore
+  rm -rf /home/$user/dots
+  rm -rf /home/$user/.git
+  rm -rf /home/$user/.gitmodules
+
+  sed -i '/\[community\]\|\[core\]\|\[extra\]/,+1 s/^\#//' /etc/pacman.conf
+  sed -i '/\[custom-official\]/,+2 s/^/#/' /etc/pacman.conf
+  sed -i '/#AURTEMP/d' /etc/sudoers
+
+  echo \"%wheel ALL=(ALL) ALL
+  %wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/paru,/usr/bin/pacman -Syyuw --noconfirm\" >> /etc/sudoers
+  " | arch-chroot /mnt
+}
 
 install() {
   customSetting
@@ -302,6 +301,7 @@ install() {
   setRoundedCorners
   setSDDM
   setGrubTheme
+  cleanUp
   # setPlymouth
 }
 
