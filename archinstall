@@ -292,10 +292,10 @@ install() {
   mountDisks
   addLocalPackages
   installArch
+  setHostInfo
   ###### add a password
   echo "root:$password" | chpasswd --root /mnt
   echo "$user:$userpass" | chpasswd --root /mnt
-  setHostInfo
   installGrub
   installPackages
   installConfig
