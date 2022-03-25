@@ -149,8 +149,7 @@ genfstab -U /mnt >> /mnt/etc/fstab
 echo "timedatectl set-ntp 1"
 echo "sed -i 's/\#Color/Color/g' /etc/pacman.conf"
 echo useradd $user -m -G wheel
-# echo "echo -e \"${userpass}\n${userpass}\" | passwd $user"
-# FIXME:need no passwd fist
+echo "echo -e \"${userpass}\n${userpass}\" | passwd $user"
 echo "echo \"%wheel ALL=(ALL) NOPASSWD: ALL #AURTEMP\" >> /etc/sudoers"
 
 echo "chsh -s /usr/bin/zsh $user"
@@ -291,10 +290,9 @@ install() {
   mountDisks
   addLocalPackages
   installArch
-  setHostInfo
   ###### add a password
   echo "root:$password" | chpasswd --root /mnt
-  echo "$user:$userpass" | chpasswd --root /mnt
+  setHostInfo
   installGrub
   installPackages
   installConfig
